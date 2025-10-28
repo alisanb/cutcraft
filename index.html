@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>UG Admissions Check</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font: 16px/1.4 system-ui, sans-serif; margin: 24px; }
+    .row { margin: 12px 0; }
+    textarea { width: 100%; min-height: 140px; }
+    #result { white-space: pre-wrap; background:#f6f6f6; padding:12px; border-radius:8px; }
+    .muted { color:#666 }
+    .btn { padding:10px 14px; border:1px solid #ccc; border-radius:8px; background:#fff; cursor:pointer }
+    .btn[disabled]{opacity:.6; cursor:not-allowed}
+  </style>
+</head>
+<body>
+  <h1>Undergrad Admissions Readiness</h1>
+
+  <form id="admissions-form">
+    <div class="row">
+      <label>Full name<br><input type="text" name="full_name" required /></label>
+    </div>
+    <div class="row">
+      <label>Email<br><input type="email" name="email" /></label>
+    </div>    <div class="row">
+      <label>GPA out of 100 <br><input type="text" name="gpa" /></label>
+    </div>
+    <div class="row">
+      <label>Short text about activities / goals<br>
+        <textarea name="activities"></textarea>
+      </label>
+    </div>
+    <div class="row">
+      <label>Upload files (PDF/TXT preferred). You can select multiple.<br>
+        <input type="file" name="files" id="files" multiple />
+      </label>
+      <div class="muted">Tip: upload CV, certificates, score reports, offers, etc.</div>
+    </div>
+
+    <div class="row">
+      <button class="btn" id="submitBtn" type="submit">Analyze</button>
+      <span id="status" class="muted" style="margin-left:10px;"></span>
+    </div>
+  </form>
+
+  <h2>Result</h2>
+  <div id="result" class="muted">No result yet.</div>
+
+  <script>
+    const WEBHOOK_URL = "https://n8n.dayeler.com/webhook-test/admissions-intake"; // n8n Webhook (Production URL)
+
+    const formEl = document.getElementById('admissions-form');
+    const statusEl = document.getElementById('status');
+    const resultEl = document.getElementById('result');
+    const submitBtn = document.getElementById('submitBtn');
+
+    formEl.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fd = new FormData(formEl);
+      // ensure each selected file is appended; some browsers only send first one
+      const filesInput = document.getElementById('files');
+      if (filesInput && filesInput.files) {
+        for (const f of filesInput.files) fd.append('files', f, f.name);
+      }
+
+      submitBtn.disabled = true;
+      statusEl.textContent = "Sending…";
+
+      try {
+        const res = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
+        const text = await res.text();
+        resultEl.textContent = text || "(empty response)";
+        resultEl.classList.remove('muted');
+        statusEl.textContent = res.ok ? "Done" : `HTTP ${res.status}`;
+      } catch (err) {
+        resultEl.textContent = `Error: ${err.message}`;
+        resultEl.classList.remove('muted');
+        statusEl.textContent = "Failed";
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
