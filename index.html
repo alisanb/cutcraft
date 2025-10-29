@@ -17,18 +17,38 @@
 <body>
   <h1>Undergrad Admissions Readiness</h1>
 
- <form action="https://n8n.dayeler.com/webhook/admissions"
-      method="post" enctype="multipart/form-data">
-  <input name="full_name">
-  <input type="file" name="files" multiple>
-  <button>Send</button>
-</form>
+  <form id="admissions-form">
+    <div class="row">
+      <label>Full name<br><input type="text" name="full_name" required /></label>
+    </div>
+    <div class="row">
+      <label>Email<br><input type="email" name="email" /></label>
+    </div>    <div class="row">
+      <label>GPA out of 100 <br><input type="text" name="gpa" /></label>
+    </div>
+    <div class="row">
+      <label>Short text about activities / goals<br>
+        <textarea name="activities"></textarea>
+      </label>
+    </div>
+    <div class="row">
+      <label>Upload files (PDF/TXT preferred). You can select multiple.<br>
+        <input type="file" name="files" id="files" multiple />
+      </label>
+      <div class="muted">Tip: upload CV, certificates, score reports, offers, etc.</div>
+    </div>
+
+    <div class="row">
+      <button class="btn" id="submitBtn" type="submit">Analyze</button>
+      <span id="status" class="muted" style="margin-left:10px;"></span>
+    </div>
+  </form>
 
   <h2>Result</h2>
   <div id="result" class="muted">No result yet.</div>
 
   <script>
-    const WEBHOOK_URL = "https://n8n.dayeler.com/webhook-test/admissions-intake"; // n8n Webhook (Production URL)
+    const WEBHOOK_URL = "https://n8n.dayeler.com/webhook-test/admissions"; // n8n Webhook (Production URL)
 
     const formEl = document.getElementById('admissions-form');
     const statusEl = document.getElementById('status');
