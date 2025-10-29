@@ -65,15 +65,16 @@
   <div id="out"></div>
 
   <script>
-    const WEBHOOK_URL = "https://YOUR-N8N-HOST/webhook/intake"; // replace
+    const WEBHOOK_URL = "https://https://n8n.dayeler.com/webhook-test/intake"; // replace
 
     document.getElementById('f').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const res = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
+      const res = await fetch(https://https://n8n.dayeler.com/webhook-test/intake, { method: 'POST', body: fd });
       const txt = await res.text();
       document.getElementById('out').textContent = txt;
     });
   </script>
 </body>
 </html>
+
