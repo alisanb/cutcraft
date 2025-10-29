@@ -44,10 +44,11 @@
     document.getElementById('f').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);           // includes all fields + multiple files (name="files")
-      const res = await fetch(https://n8n.dayeler.com/webhook-test/intake, { method: 'POST', body: fd });
+      const res = await fetch("https:n8n.dayeler.com/webhook-test/intake", { method: 'POST', body: fd });
       const txt = await res.text();
       document.getElementById('out').textContent = txt || '(empty response)';
     });
   </script>
 </body>
 </html>
+
