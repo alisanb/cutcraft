@@ -2,87 +2,78 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>UG Admissions Check</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Extracurricular Intake</title>
   <style>
-    body { font: 16px/1.4 system-ui, sans-serif; margin: 24px; }
-    .row { margin: 12px 0; }
-    textarea { width: 100%; min-height: 140px; }
-    #result { white-space: pre-wrap; background:#f6f6f6; padding:12px; border-radius:8px; }
-    .muted { color:#666 }
-    .btn { padding:10px 14px; border:1px solid #ccc; border-radius:8px; background:#fff; cursor:pointer }
-    .btn[disabled]{opacity:.6; cursor:not-allowed}
+    body{font:14px/1.4 system-ui,Segoe UI,Roboto,Arial,sans-serif;margin:24px;max-width:860px}
+    fieldset{border:1px solid #d0d0d0;border-radius:8px;padding:16px;margin:0 0 16px}
+    legend{font-weight:600}
+    label{display:block;margin:8px 0 4px}
+    input,select,textarea{width:100%;padding:8px;border:1px solid #c8c8c8;border-radius:6px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    button{padding:10px 14px;border:0;border-radius:8px;background:#1f6feb;color:#fff;cursor:pointer}
+    #out{white-space:pre-wrap;border:1px solid #e0e0e0;border-radius:8px;padding:12px;margin-top:16px}
   </style>
 </head>
 <body>
-  <h1>Undergrad Admissions Readiness</h1>
+  <h1>Admissions Extracurriculars Intake</h1>
+  <form id="f">
+    <fieldset><legend>Contact</legend>
+      <div class="row">
+        <div><label>Full name <input name="full_name" required></label></div>
+        <div><label>Email <input name="email" type="email"></label></div>
+      </div>
+      <div class="row">
+        <div><label>Phone <input name="phone"></label></div>
+        <div><label>Education level <input name="education_level" placeholder="11th grade / Bachelor year 1"></label></div>
+      </div>
+    </fieldset>
 
-  <form id="admissions-form">
-    <div class="row">
-      <label>Full name<br><input type="text" name="full_name" required /></label>
-    </div>
-    <div class="row">
-      <label>Email<br><input type="email" name="email" /></label>
-    </div>    <div class="row">
-      <label>GPA out of 100 <br><input type="text" name="gpa" /></label>
-    </div>
-    <div class="row">
-      <label>Short text about activities / goals<br>
-        <textarea name="activities"></textarea>
-      </label>
-    </div>
-    <div class="row">
-      <label>Upload files (PDF/TXT preferred). You can select multiple.<br>
-        <input type="file" name="files" id="files" multiple />
-      </label>
-      <div class="muted">Tip: upload CV, certificates, score reports, offers, etc.</div>
-    </div>
+    <fieldset><legend>Academics and Profile</legend>
+      <div class="row">
+        <div><label>GPA or grades <input name="gpa_or_grades"></label></div>
+        <div><label>Tests <input name="tests" placeholder="SAT 1480; IELTS 7.5"></label></div>
+      </div>
+      <div class="row">
+        <div><label>Awards <input name="awards" placeholder="Olympiad bronze; city science fair"></label></div>
+        <div><label>Destinations <input name="destinations" placeholder="US; UK; Europe"></label></div>
+      </div>
+      <div class="row">
+        <div><label>Budget <input name="budget" placeholder="USD 30k/year"></label></div>
+        <div><label>Timeline months to apply <input name="timeline_months_to_apply" type="number" min="0"></label></div>
+      </div>
+      <label>Goals <textarea name="goals" rows="2"></textarea></label>
+    </fieldset>
 
-    <div class="row">
-      <button class="btn" id="submitBtn" type="submit">Analyze</button>
-      <span id="status" class="muted" style="margin-left:10px;"></span>
-    </div>
+    <fieldset><legend>Activities</legend>
+      <label>Activities <textarea name="activities" rows="2"></textarea></label>
+      <label>Volunteering <textarea name="volunteering" rows="2"></textarea></label>
+      <label>Leadership roles <textarea name="leadership_roles" rows="2"></textarea></label>
+      <label>Sports / arts <textarea name="sports_arts" rows="2"></textarea></label>
+      <label>Work experience <textarea name="work_experience" rows="2"></textarea></label>
+    </fieldset>
+
+    <fieldset><legend>Upload evidence (multiple files)</legend>
+      <input name="files" type="file" multiple
+             accept=".txt,.md,.csv,.json,.pdf,.doc,.docx,.rtf,.png,.jpg,.jpeg,.heic,.webp" />
+      <small>Text and PDF with embedded text are extracted server-side. Images/Docx are ignored unless you also paste text above.</small>
+    </fieldset>
+
+    <button type="submit">Submit</button>
   </form>
 
-  <h2>Result</h2>
-  <div id="result" class="muted">No result yet.</div>
+  <div id="out"></div>
 
- <script>
-  const WEBHOOK_URL = "https://n8n.dayeler.com/webhook-test/intake"; // production
+  <script>
+    const WEBHOOK_URL = "https://YOUR-N8N-HOST/webhook/intake"; // replace
 
-  const formEl = document.getElementById('admissions-form');
-  const statusEl = document.getElementById('status');
-  const resultEl = document.getElementById('result');
-  const submitBtn = document.getElementById('submitBtn');
-
-  formEl.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fd = new FormData(formEl); // includes <input type="file" name="files" multiple>
-
-    submitBtn.disabled = true;
-    statusEl.textContent = "Sending";
-
-    try {
+    document.getElementById('f').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
       const res = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
-      const text = await res.text();
-      resultEl.textContent = text || "(empty response)";
-      resultEl.classList.remove('muted');
-      statusEl.textContent = res.ok ? "Done" : `HTTP ${res.status}`;
-    } catch (err) {
-      resultEl.textContent = `Error: ${err.message}`;
-      resultEl.classList.remove('muted');
-      statusEl.textContent = "Failed";
-    } finally {
-      submitBtn.disabled = false;
-    }
-  });
-</script>
-
+      const txt = await res.text();
+      document.getElementById('out').textContent = txt;
+    });
+  </script>
 </body>
 </html>
-
-
-
-
-
-
