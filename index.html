@@ -1,41 +1,53 @@
 <!doctype html>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admissions Intake</title>
-<style>
-  body{font:16px/1.45 system-ui,Segoe UI,Roboto,Arial,sans-serif;margin:24px;max-width:720px}
-  label{display:block;margin:10px 0 6px}
-  input,button{padding:10px;border:1px solid #c9c9c9;border-radius:8px}
-  input[type="text"],input[type="email"]{width:100%}
-  button{border:0;background:#1f6feb;color:#fff;cursor:pointer;margin-top:12px}
-  #out{white-space:pre-wrap;border:1px solid #e5e5e5;border-radius:8px;padding:12px;margin-top:16px}
-</style>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admissions Upload</title>
+  <style>
+    body{font:16px/1.45 system-ui,Segoe UI,Roboto,Arial,sans-serif;margin:24px;max-width:720px}
+    label{display:block;margin:10px 0 6px}
+    input,button{padding:10px;border:1px solid #c9c9c9;border-radius:8px}
+    input[type="text"],input[type="email"]{width:100%}
+    button{border:0;background:#1f6feb;color:#fff;cursor:pointer;margin-top:12px}
+    #out{white-space:pre-wrap;border:1px solid #e5e5e5;border-radius:8px;padding:12px;margin-top:16px}
+  </style>
+</head>
+<body>
+  <h1>Admissions Intake</h1>
 
-<h1>Admissions Intake</h1>
+  <!-- SIMPLE NO-JS FORM (posts directly to n8n; navigates away) -->
+  <!-- Replace with your production webhook URL -->
+  <!-- <form action="https://n8n.dayeler.com/webhook/admissions" method="post" enctype="multipart/form-data">
+    <label>Name <input name="full_name" required></label>
+    <label>Email <input name="email" type="email"></label>
+    <label>GPA <input name="gpa" placeholder="e.g., 3.8/4.0 or 91/100"></label>
+    <label>Files <input name="files" type="file" multiple></label>
+    <button type="submit">Submit</button>
+  </form> -->
 
-<form id="f" enctype="multipart/form-data">
-  <label>Name <input name="full_name" required></label>
-  <label>Email <input name="email" type="email"></label>
-  <label>GPA <input name="gpa" placeholder="e.g., 3.8/4.0 or 91/100"></label>
-  <label>Files <input name="files" type="file" multiple></label>
-  <button type="submit">Submit</button>
-</form>
+  <!-- JS FORM (stays on page and shows n8n response) -->
+  <form id="f" enctype="multipart/form-data">
+    <label>Name <input name="full_name" required></label>
+    <label>Email <input name="email" type="email"></label>
+    <label>GPA <input name="gpa" placeholder="e.g., 3.8/4.0 or 91/100"></label>
+    <label>Files <input name="files" type="file" multiple></label>
+    <button type="submit">Submit</button>
+  </form>
 
-<div id="out">Response will appear here.</div>
+  <div id="out">Response will appear here.</div>
 
-<script>
-  // Use PRODUCTION if your workflow is active with response node.
-  const WEBHOOK_URL = "https://n8n.dayeler.com/webhook-test/admissions"; // <-- match your node's path
+  <script>
+    // Use your PRODUCTION webhook URL (not /webhook-test/)
+    const WEBHOOK_URL = "https://n8n.dayeler.com/webhook-test/admissions";
 
-  document.getElementById('f').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fd = new FormData(e.target);
-    try {
-      const res = await fetch("https://n8n.dayeler.com/webhook-test/admissions", { method: 'POST', body: fd });
+    document.getElementById('f').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);           // includes all fields + multiple files (name="files")
+      const res = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
       const txt = await res.text();
       document.getElementById('out').textContent = txt || '(empty response)';
-    } catch (err) {
-      document.getElementById('out').textContent = 'Error: ' + err.message;
-    }
-  });
-</script>
+    });
+  </script>
+</body>
+</html>
