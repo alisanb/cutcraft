@@ -7,13 +7,14 @@
 </form>
 <div id="out"></div>
 <script>
-  const WEBHOOK_URL = "https://n8n.dayeler.com/webhook/admissions"; // must match node path
+  const webhook-test_URL = "https://n8n.dayeler.com/webhook-test/admissions"; // must match node path
 
   document.getElementById('f').addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target); // includes files
-    const res = await fetch("https://n8n.dayeler.com/webhook/admissions", { method: 'POST', body: fd });
+    const res = await fetch("https://n8n.dayeler.com/webhook-test/admissions", { method: 'POST', body: fd });
     const txt = await res.text();
     document.getElementById('out').textContent = txt || '(empty response)';
   });
 </script>
+
