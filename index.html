@@ -47,44 +47,40 @@
   <h2>Result</h2>
   <div id="result" class="muted">No result yet.</div>
 
-  <script>
-    const WEBHOOK_URL = "https://n8n.dayeler.com/webhook-test/admissions"; // n8n Webhook (Production URL)
+ <script>
+  const WEBHOOK_URL = "https://n8n.dayeler.com/webhook/admissions"; // production
 
-    const formEl = document.getElementById('admissions-form');
-    const statusEl = document.getElementById('status');
-    const resultEl = document.getElementById('result');
-    const submitBtn = document.getElementById('submitBtn');
+  const formEl = document.getElementById('admissions-form');
+  const statusEl = document.getElementById('status');
+  const resultEl = document.getElementById('result');
+  const submitBtn = document.getElementById('submitBtn');
 
-    formEl.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  formEl.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(formEl); // includes <input type="file" name="files" multiple>
 
-      const fd = new FormData(formEl);
-      // ensure each selected file is appended; some browsers only send first one
-      const filesInput = document.getElementById('files');
-      if (filesInput && filesInput.files) {
-        for (const f of filesInput.files) fd.append('files', f, f.name);
-      }
+    submitBtn.disabled = true;
+    statusEl.textContent = "Sending";
 
-      submitBtn.disabled = true;
-      statusEl.textContent = "Sending…";
+    try {
+      const res = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
+      const text = await res.text();
+      resultEl.textContent = text || "(empty response)";
+      resultEl.classList.remove('muted');
+      statusEl.textContent = res.ok ? "Done" : `HTTP ${res.status}`;
+    } catch (err) {
+      resultEl.textContent = `Error: ${err.message}`;
+      resultEl.classList.remove('muted');
+      statusEl.textContent = "Failed";
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+</script>
 
-      try {
-        const res = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
-        const text = await res.text();
-        resultEl.textContent = text || "(empty response)";
-        resultEl.classList.remove('muted');
-        statusEl.textContent = res.ok ? "Done" : `HTTP ${res.status}`;
-      } catch (err) {
-        resultEl.textContent = `Error: ${err.message}`;
-        resultEl.classList.remove('muted');
-        statusEl.textContent = "Failed";
-      } finally {
-        submitBtn.disabled = false;
-      }
-    });
-  </script>
 </body>
 </html>
+
 
 
 
