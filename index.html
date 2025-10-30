@@ -1,24 +1,58 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admissions Upload</title>
-  <style>
-    body{font:16px/1.45 system-ui,Segoe UI,Roboto,Arial,sans-serif;margin:24px;max-width:720px}
-    label{display:block;margin:10px 0 6px}
-    input,button{padding:10px;border:1px solid #c9c9c9;border-radius:8px}
-    input[type="text"],input[type="email"]{width:100%}
-    button{border:0;background:#1f6feb;color:#fff;cursor:pointer;margin-top:12px}
-    #out{white-space:pre-wrap;border:1px solid #e5e5e5;border-radius:8px;padding:12px;margin-top:16px}
-  </style>
-</head>
-<body>
-  <h1>Admissions Intake</h1>
 
-  <!-- SIMPLE NO-JS FORM (posts directly to n8n; navigates away) -->
-  <!-- Replace with your production webhook-test URL -->
-  <!-- <form action="https://n8n.dayeler.com/webhook-test/admissions" method="post" enctype="multipart/form-data">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admissions Upload</title>
+    <style>
+        body {
+            font: 16px/1.45 system-ui, Segoe UI, Roboto, Arial, sans-serif;
+            margin: 24px;
+            max-width: 720px
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 6px
+        }
+
+        input,
+        button {
+            padding: 10px;
+            border: 1px solid #c9c9c9;
+            border-radius: 8px
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            width: 100%
+        }
+
+        button {
+            border: 0;
+            background: #1f6feb;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 12px
+        }
+
+        #out {
+            white-space: pre-wrap;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Admissions Intake</h1>
+
+    <!-- SIMPLE NO-JS FORM (posts directly to n8n; navigates away) -->
+    <!-- Replace with your production webhook-test URL -->
+    <!-- <form action="https://n8n.dayeler.com/webhook-test/admissions" method="post" enctype="multipart/form-data">
     <label>Name <input name="full_name" required></label>
     <label>Email <input name="email" type="email"></label>
     <label>GPA <input name="gpa" placeholder="e.g., 3.8/4.0 or 91/100"></label>
@@ -26,30 +60,76 @@
     <button type="submit">Submit</button>
   </form> -->
 
-  <!-- JS FORM (stays on page and shows n8n response) -->
-  <form id="f" enctype="multipart/form-data">
-    <label>Name <input name="full_name" required></label>
-    <label>Email <input name="email" type="email"></label>
-    <label>GPA <input name="gpa" placeholder="e.g., 3.8/4.0 or 91/100"></label>
-    <label>Files <input name="files" type="file" multiple></label>
-    <button type="submit">Submit</button>
-  </form>
+    <!-- JS FORM (stays on page and shows n8n response) -->
+    <form id="f" enctype="multipart/form-data">
+        <label>Name <input name="full_name" required></label>
+        <label>Email <input name="email" type="email"></label>
+        <label>GPA <input name="gpa" placeholder="e.g., 3.8/4.0 or 91/100"></label>
+        <label>Files <input name="files" type="file" multiple></label>
+        <button type="submit">Submit</button>
+    </form>
 
-  <div id="out">Response will appear here.</div>
+    <div id="out">Response will appear here.</div>
 
-  <script>
-    // Use your PRODUCTION webhook-test URL (not /webhook-test-test/)
-    const webhook-test_URL = "https://n8n.dayeler.com/webhook-test/admissions";
+    <script>
+        // Use your PRODUCTION webhook-test URL (not /webhook-test-test/)
+        const webhooktest_URL = "https://n8n.dayeler.com/webhook-test/admissions";
 
-    document.getElementById('f').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const fd = new FormData(e.target);           // includes all fields + multiple files (name="files")
-      const res = await fetch(webhook-test_URL, { method: 'POST', body: fd });
-      const txt = await res.text();
-      document.getElementById('out').textContent = txt || '(empty response)';
-    });
-  </script>
+        const form = document.getElementById('f');
+        const out = document.getElementById('out');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        function formDataSummary(fd) {
+            const parts = [];
+            for (const [k, v] of fd.entries()) {
+                if (v instanceof File) {
+                    parts.push(${k}: File[name=${v.name || 'empty'}, size=${v.size}]);
+                } else {
+                    parts.push(${k}: ${v});
+                }
+            }
+            return parts.join('\n');
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(form);
+            out.textContent = 'Sending...';
+            submitBtn.disabled = true;
+            try {
+                // Debug: show a concise summary of the FormData in console
+                console.log('FormData content:\n' + formDataSummary(fd));
+
+                const res = await fetch(webhooktest_URL, { method: 'POST', body: fd });
+                const contentType = res.headers.get('content-type') || '';
+                let bodyText;
+                if (contentType.includes('application/json')) {
+                    const json = await res.json();
+                    bodyText = JSON.stringify(json, null, 2);
+                } else {
+                    bodyText = await res.text();
+                }
+
+                out.textContent = HTTP ${res.status} ${res.statusText}\n\n${bodyText || '(empty response)'};
+                if (!res.ok) {
+                    out.style.borderColor = '#f5c2c7';
+                } else {
+                    out.style.borderColor = '#d1e7dd';
+                }
+            } catch (err) {
+                console.error(err);
+                out.textContent = 'Request failed: ' + err.message + '\n\nPossible causes: CORS blocked by the server, network down, or the webhook URL is incorrect.';
+                out.style.borderColor = '#f5c2c7';
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Helpful hint when page is opened via file:// which can cause some browsers to block fetch
+        if (location.protocol === 'file:') {
+            out.textContent = 'Note: Running this file from the filesystem (file://) may cause fetch/CORS issues. For best results, open via a local web server (e.g., "python -m http.server").';
+        }
+    </script>
 </body>
+
 </html>
-
-
